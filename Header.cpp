@@ -6,6 +6,8 @@
 class Header
 {
 public:
+    std::string path;
+    std::string method;
     Header(char *raw_header)
     {
         this->raw_header = raw_header;
@@ -43,8 +45,7 @@ public:
 
 private:
     std::string raw_header;
-    std::string path;
-    std::string method;
+
     std::map<std::string, std::string> headers;
 
     void parse_header()

@@ -4,7 +4,9 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <functional>
 #include "Header.cpp"
+#include <map>
 
 class Servidor
 {
@@ -21,9 +23,16 @@ public:
         main_loop();
     }
 
+    // function
+    void get(std::string path, std::function<std::string(void)> func)
+    {
+        routes[path] = func;
+    }
+
 private:
     int sockfd;
     struct sockaddr_in server_address;
+    std::map<std::string, std::function<std::string(void)>> routes;
 
     void init_socket(int port)
     {
@@ -82,10 +91,29 @@ private:
             }
 
             Header header = Header::parse_header(buffer);
-            header.print_headers();
 
-            char response[] = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html><body>Hola mundo</body></html>";
-            n = write(client_sockfd, response, strlen(response));
+            // routes
+            std::string path = header.path;
+            std::string method = header.method;
+            std::string response = "";
+
+            if (routes.find(path) != routes.end())
+            {
+                response = routes[path]();
+            }
+            else
+            {
+                response = "404 Not Found";
+            }
+
+            // response
+            std::string response_header = "HTTP/1.1 200 OK\r\n\r\n";
+            std::string response_body = response;
+            std::string response_full = response_header + response_body;
+
+            // send
+
+            n = write(client_sockfd, response_full.c_str(), response_full.size());
             if (n < 0)
             {
                 perror("Error al escribir en el socket cliente");
