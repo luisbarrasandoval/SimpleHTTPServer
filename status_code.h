@@ -1,0 +1,10 @@
+enum status_code
+{
+    OK = 200,
+    REDIRECT = 301,
+    AUTHORIZATION_REQUIRED = 401,
+    FORBIDDEN = 403,
+    NOT_FOUND = 404,
+    INTERNAL_SERVER_ERROR = 500,
+
+};
