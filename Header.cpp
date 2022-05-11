@@ -1,23 +1,42 @@
+#ifndef HEADER_CPP
+#define HEADER_CPP
+
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <map>
+
+#include "status_code.h"
 
 class Header
 {
 public:
     std::string path;
     std::string method;
-    Header(char *raw_header)
+
+    Header()
     {
-        this->raw_header = raw_header;
+        path = "";
+        method = "";
+        raw_header = "";
     }
 
     static Header parse_header(char *raw_header)
     {
-        Header n = Header(raw_header);
+        Header n = Header();
+        n.raw_header = raw_header;
         n.parse_header();
         return n;
+    }
+
+    std::string get_path()
+    {
+        return path;
+    }
+
+    void set_header(std::string key, std::string value)
+    {
+        headers[key] = value;
     }
 
     std::string get_header(std::string key)
@@ -25,27 +44,30 @@ public:
         return this->headers[key];
     }
 
-    std::string get_raw_header()
+    int get_status_code()
     {
-        return this->raw_header;
+        return this->status_code;
     }
 
-    void print_headers()
+    void set_status_code(int status_code)
     {
-        std::cout << "METHOD: " << this->method << std::endl;
-        std::cout << "PATH: " << this->path << std::endl;
-        std::cout << "======== HEADERS =========" << std::endl;
-        for (auto it = headers.begin(); it != headers.end(); ++it)
-        {
-            std::cout << it->first << "-> " << it->second << std::endl;
-        }
+        this->status_code = 200;
+    }
 
-        std::cout << "==========================" << std::endl;
+    std::string get_raw_header()
+    {
+        std::stringstream ss;
+        ss << "HTTP/1.1 " << status_code << " " << get_status_code_message(status_code) << "\r\n";
+        for (auto &kv : this->headers)
+        {
+            ss << kv.first << ": " << kv.second << "\r\n";
+        }
+        return ss.str();
     }
 
 private:
     std::string raw_header;
-
+    int status_code;
     std::map<std::string, std::string> headers;
 
     void parse_header()
@@ -73,3 +95,5 @@ private:
         }
     }
 };
+
+#endif

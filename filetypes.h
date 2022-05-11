@@ -1,3 +1,6 @@
+#ifndef FILETYPES
+#define FILETYPES
+
 #define HTML "text/html"
 #define CSS "text/css"
 #define JS "application/javascript"
@@ -13,3 +16,5 @@
 #define MP4 "video/mp4"
 #define WEBM "video/webm"
 #define TEXT "text/plain"
+
+#endif

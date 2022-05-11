@@ -5,8 +5,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <functional>
-#include "Header.cpp"
+#include "Response.cpp"
+#include "Request.cpp"
 #include <map>
+#include "Header.cpp"
+
 
 class Servidor
 {
@@ -24,7 +27,7 @@ public:
     }
 
     // function
-    void get(std::string path, std::function<std::string(void)> func)
+    void get(std::string path, std::function<void(Request req, Response rep)> func)
     {
         routes[path] = func;
     }
@@ -32,7 +35,7 @@ public:
 private:
     int sockfd;
     struct sockaddr_in server_address;
-    std::map<std::string, std::function<std::string(void)>> routes;
+    std::map<std::string, std::function<void(Request req, Response rep)>> routes;
 
     void init_socket(int port)
     {
@@ -91,29 +94,27 @@ private:
             }
 
             Header header = Header::parse_header(buffer);
+            Request request = Request();
+            Response response = Response();
 
-            // routes
-            std::string path = header.path;
-            std::string method = header.method;
-            std::string response = "";
-
-            if (routes.find(path) != routes.end())
+            if (header.get_status_code() == StatusCode::OK)
             {
-                response = routes[path]();
+                std::function<void(Request req, Response rep)> func = routes[header.get_path()];
+                if (func)
+                {
+                    func(request, response);
+                }
+                else
+                {
+                    response.set_status_code(StatusCode::NOT_FOUND);
+                }
             }
-            else
-            {
-                response = "404 Not Found";
-            }
 
-            // response
-            std::string response_header = "HTTP/1.1 200 OK\r\n\r\n";
-            std::string response_body = response;
-            std::string response_full = response_header + response_body;
+            std::string body = response.get_raw_header() + "\r\n" + response.get_body();
+            
 
-            // send
 
-            n = write(client_sockfd, response_full.c_str(), response_full.size());
+            n = write(client_sockfd, body.c_str(), body.size());
             if (n < 0)
             {
                 perror("Error al escribir en el socket cliente");
@@ -121,6 +122,6 @@ private:
             }
 
             close(client_sockfd);
-        }
+      }
     }
 };
