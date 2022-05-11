@@ -24,6 +24,8 @@ public:
     }
 
     std::string get_raw_header() {
+        
+        headers.update_content_length(body.size());
         return headers.get_raw_header();
     }
 

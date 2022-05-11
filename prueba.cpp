@@ -1,19 +1,16 @@
 #include <string>
-#include "Header.cpp"
+#include "Response.cpp"
 #include "status_code.h"
+#include "filetypes.h"
 
 int main() {
-    Header h = Header();
-    h.set_header("Content-Type", "text/html");
-    h.set_header("Content-Length", "12");
-    h.set_header("Connection", "close");
-    h.set_header("Server", "MyServer");
-    h.set_status_code(StatusCode::NOT_FOUND);
-
-    std::string html = "<html><body>Hola mundo</body></html>";
-    h.set_header("Content-Length", std::to_string(html.size()));
-
-    std::cout << h.get_raw_header() << html << std::endl;
+    Response r = Response();
+    r.set_status_code(StatusCode::OK);
+    r.set_header("Content-Type", HTML);
+    r.send("Hola mundo");
+    r.send("Hola mundo");
+    std::cout << r.get_raw_header() << std::endl;
+    std::cout << r.get_body() << std::endl;
 
     return 0;
 }

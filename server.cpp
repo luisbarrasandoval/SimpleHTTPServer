@@ -10,7 +10,6 @@
 #include <map>
 #include "Header.cpp"
 
-
 class Servidor
 {
 public:
@@ -27,7 +26,7 @@ public:
     }
 
     // function
-    void get(std::string path, std::function<void(Request req, Response rep)> func)
+    void get(std::string path, std::function<void(Request * req, Response * rep)> func)
     {
         routes[path] = func;
     }
@@ -35,7 +34,7 @@ public:
 private:
     int sockfd;
     struct sockaddr_in server_address;
-    std::map<std::string, std::function<void(Request req, Response rep)>> routes;
+    std::map<std::string, std::function<void(Request * req, Response *rep)>> routes;
 
     void init_socket(int port)
     {
@@ -94,25 +93,23 @@ private:
             }
 
             Header header = Header::parse_header(buffer);
-            Request request = Request();
-            Response response = Response();
+            Request * request = new Request();
+            Response * response = new Response();
 
-            if (header.get_status_code() == StatusCode::OK)
+
+            std::function<void(Request *req, Response *rep)> func = routes[header.path];
+            if (func)
             {
-                std::function<void(Request req, Response rep)> func = routes[header.get_path()];
-                if (func)
-                {
-                    func(request, response);
-                }
-                else
-                {
-                    response.set_status_code(StatusCode::NOT_FOUND);
-                }
+                // print response header
+                func(request, response);
+            }
+            else
+            {
+                response -> set_status_code(StatusCode::NOT_FOUND);
+                response -> send("Not found");
             }
 
-            std::string body = response.get_raw_header() + "\r\n" + response.get_body();
-            
-
+            std::string body = response -> get_raw_header() + "\r\n" + response -> get_body() + "\r\n";
 
             n = write(client_sockfd, body.c_str(), body.size());
             if (n < 0)
@@ -121,7 +118,9 @@ private:
                 exit(1);
             }
 
+            delete request;
+            delete response;
             close(client_sockfd);
-      }
+        }
     }
 };

@@ -49,9 +49,18 @@ public:
         return this->status_code;
     }
 
+    long update_content_length(long l)
+    {
+        std::stringstream ss;
+        ss << l;
+        std::string s = ss.str();
+        headers["Content-Length"] = s;
+        return l;
+    }
+
     void set_status_code(int status_code)
     {
-        this->status_code = 200;
+        this->status_code = status_code;
     }
 
     std::string get_raw_header()

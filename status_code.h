@@ -2,6 +2,7 @@
 #define STATUS_CODE
 
 #include <string>
+
 enum StatusCode
 {
     OK = 200,
@@ -28,9 +29,9 @@ std::string get_status_code_message(int status_code)
         return "NOT_FOUND";
     case INTERNAL_SERVER_ERROR:
         return "INTERNAL_SERVER_ERROR";
-    default:
     }
-        return "UNKNOWN";
+
+    return "UNKNOWN";
 }
 
 
