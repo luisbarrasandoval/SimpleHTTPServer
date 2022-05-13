@@ -74,10 +74,16 @@ public:
         return ss.str();
     }
 
+    std::string get_raw_querys()
+    {
+        return raw_querys;
+    }
+
 private:
     std::string raw_header;
     int status_code;
     std::map<std::string, std::string> headers;
+    std::string raw_querys;
 
     void parse_header()
     {
@@ -102,6 +108,9 @@ private:
                 headers[key] = value;
             }
         }
+
+        raw_querys = path.substr(path.find('?') + 1);
+        path = path.substr(0, path.find('?'));
     }
 };
 

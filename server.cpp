@@ -26,7 +26,7 @@ public:
     }
 
     // function
-    void get(std::string path, std::function<void(Request * req, Response * rep)> func)
+    void get(std::string path, std::function<void(Request *req, Response *rep)> func)
     {
         routes[path] = func;
     }
@@ -34,7 +34,7 @@ public:
 private:
     int sockfd;
     struct sockaddr_in server_address;
-    std::map<std::string, std::function<void(Request * req, Response *rep)>> routes;
+    std::map<std::string, std::function<void(Request *req, Response *rep)>> routes;
 
     void init_socket(int port)
     {
@@ -93,11 +93,13 @@ private:
             }
 
             Header header = Header::parse_header(buffer);
-            Request * request = new Request();
-            Response * response = new Response();
+            Request *request = new Request(header);
+            Response *response = new Response();
 
+            // log url
+            std::cout << header.method << ": " << header.path << std::endl;
 
-            std::function<void(Request *req, Response *rep)> func = routes[header.path];
+            std::function<void(Request * req, Response * rep)> func = routes[header.path];
             if (func)
             {
                 // print response header
@@ -105,11 +107,11 @@ private:
             }
             else
             {
-                response -> set_status_code(StatusCode::NOT_FOUND);
-                response -> send("Not found");
+                response->set_status_code(StatusCode::NOT_FOUND);
+                response->send("Not found: " + header.path);
             }
 
-            std::string body = response -> get_raw_header() + "\r\n" + response -> get_body() + "\r\n";
+            std::string body = response->get_raw_header() + "\r\n" + response->get_body() + "\r\n";
 
             n = write(client_sockfd, body.c_str(), body.size());
             if (n < 0)
